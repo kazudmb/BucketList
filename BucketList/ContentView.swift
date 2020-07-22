@@ -14,10 +14,11 @@ struct ContentView: View {
     
     @State private var centerCoordinate = CLLocationCoordinate2D()
     @State private var selectedPlace: MKPointAnnotation?
-    @State private var showingPlaceDetails = false
+    @State private var showingAlert = false
     @State private var locations = [CodableMKPointAnnotation]()
     @State private var showingEditScreen = false
     @State private var isUnlocked = false
+    @State private var alertType = ""
     
     var body: some View {
         ZStack {
@@ -25,7 +26,8 @@ struct ContentView: View {
                 MapView(
                     centerCoordinate: $centerCoordinate,
                     selectedPlace: $selectedPlace,
-                    showingPlaceDetails: $showingPlaceDetails,
+                    showingAlert: $showingAlert,
+                    alertType: $alertType,
                     annotations: locations
                 )
                     .edgesIgnoringSafeArea(.all)
@@ -66,10 +68,22 @@ struct ContentView: View {
                 .clipShape(Capsule())
             }
         }
-        .alert(isPresented: $showingPlaceDetails) {
-            Alert(title: Text(selectedPlace?.title ?? "Unknown"), message: Text(selectedPlace?.subtitle ?? "Missing place information."), primaryButton: .default(Text("OK")), secondaryButton: .default(Text("Edit")) {
-                self.showingEditScreen = true
-                })
+        .alert(isPresented: $showingAlert) {
+            switch(alertType) {
+            case "place detail" :
+                return
+                    Alert(title: Text(selectedPlace?.title ?? "Unknown"), message: Text(selectedPlace?.subtitle ?? "Missing place information."), primaryButton: .default(Text("OK")), secondaryButton: .default(Text("Edit")) {
+                        self.showingEditScreen = true
+                        })
+            case "authenticate error" :
+                return
+                    Alert(title: Text("authenticate error."), dismissButton: .default(Text("OK")) {
+                        })
+            default:
+                return
+                    Alert(title: Text("Error"), dismissButton: .default(Text("OK")) {
+                        })
+            }
         }
         .sheet(isPresented: $showingEditScreen, onDismiss: saveData) {
             if self.selectedPlace != nil {
@@ -77,7 +91,6 @@ struct ContentView: View {
             }
         }
         .onAppear(perform: loadData)
-        
     }
     
     func getDocumentsDirectory() -> URL {
@@ -120,11 +133,15 @@ struct ContentView: View {
                         self.isUnlocked = true
                     } else {
                         // error
+                        self.showingAlert = true
+                        self.alertType = "authenticate error"
                     }
                 }
             }
         } else {
             // no biometrics
+            self.showingAlert = true
+            self.alertType = "authenticate error"
         }
     }
 }

@@ -13,7 +13,8 @@ struct MapView: UIViewRepresentable {
     
     @Binding var centerCoordinate: CLLocationCoordinate2D
     @Binding var selectedPlace: MKPointAnnotation?
-    @Binding var showingPlaceDetails: Bool
+    @Binding var showingAlert: Bool
+    @Binding var alertType: String
     var annotations: [MKPointAnnotation]
     
     func makeUIView(context: Context) -> MKMapView {
@@ -73,7 +74,8 @@ struct MapView: UIViewRepresentable {
             guard let placemark = view.annotation as? MKPointAnnotation else { return }
 
             parent.selectedPlace = placemark
-            parent.showingPlaceDetails = true
+            parent.showingAlert = true
+            parent.alertType = "place detail"
         }
     }
 }
@@ -94,7 +96,8 @@ struct MapView_Previews: PreviewProvider {
         MapView(
             centerCoordinate: .constant(MKPointAnnotation.example.coordinate),
             selectedPlace: .constant(MKPointAnnotation.example),
-            showingPlaceDetails: .constant(false),
+            showingAlert: .constant(false),
+            alertType: .constant(""),
             annotations: [MKPointAnnotation.example]
         )
     }
